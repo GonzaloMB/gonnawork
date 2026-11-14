@@ -166,7 +166,7 @@ export default class GitGraph extends View {
           const r = await exec("git", ["--no-optional-locks", "-c", "core.fsmonitor=false", "rev-parse", "--show-toplevel"], { cwd: d, on, timeout: 10000 });
           const root = r.code === 0 ? r.stdout.trim() : "";
           if (root && !found.some((x) => x.root === root)) found.push({ root, focused: i === 0 && d === first });
-          // One level above repos (~/Developer/Personal): the repos right under it, not deeper.
+          // One level above repos (a folder of projects like ~/code): the repos right under it, not deeper.
           if (!root && d !== home() && d !== "/") {
             const sub = await exec("sh", ["-c", 'find "$1" -mindepth 2 -maxdepth 2 -name .git 2>/dev/null | sort | head -60', "sh", d], { on, timeout: 10000 });
             for (const g of sub.stdout.split("\n").filter(Boolean)) nested.push(g.replace(/\/\.git$/, ""));
