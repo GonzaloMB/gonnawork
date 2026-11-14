@@ -1,0 +1,13 @@
+# gonnawork · Colima VM (Docker runtime). Copied to ~/.colima/default/colima.yaml by install.sh;
+# start it with `colima start`. Tweak cpu/memory/disk to taste.
+cpu: 2
+memory: 2
+disk: 40
+arch: aarch64
+runtime: docker
+vmType: vz
+mountType: virtiofs
+rosetta: false
+kubernetes:
+  enabled: false
+autoActivate: true

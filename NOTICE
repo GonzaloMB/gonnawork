@@ -1,0 +1,12 @@
+gonnawork
+Copyright 2026 GonzaloMB
+
+The Herdr mods in herdr/mods/ (neon-tabs, neon-pane, neon-agents, glass-files,
+glass-changes) are modified copies of mods shipped with Herdr
+(https://github.com/herdrdev/herdr-app), licensed under the Apache License 2.0.
+Changes: restyled for the neon/glass look; neon-tabs adds Skills, Git and Stats
+panel buttons; neon-pane adds an "Open in Ghostty" button; neon-agents shows
+Claude Code sub-agents as a tree. skills/ and gitgraph/ are original.
+
+nvim/ is based on the LazyVim starter (https://github.com/LazyVim/starter),
+licensed under the Apache License 2.0.

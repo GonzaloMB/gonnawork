@@ -1,0 +1,13 @@
+{
+  "model": "opus",
+  "theme": "dark",
+  "permissions": {
+    "deny": [
+      "Skill(google-workspace)",
+      "Skill(chrome-browser)",
+      "Skill(built-in-browser)",
+      "Skill(artifact-emulator)",
+      "Skill(computer-use)"
+    ]
+  }
+}

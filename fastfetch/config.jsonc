@@ -1,0 +1,26 @@
+{
+  "logo": {
+    "type": "builtin",
+    "source": "macOS",
+    "padding": {
+      "right": 3
+    }
+  },
+  "modules": [
+    "title",
+    "separator",
+    "os",
+    "host",
+    "cpu",
+    "gpu",
+    "memory",
+    {
+      "type": "disk",
+      "folders": "/System/Volumes/Data",
+      "key": "Disk",
+      "format": "{size-used} / {size-total} ({size-percentage})"
+    },
+    "terminal",
+    "shell"
+  ]
+}
