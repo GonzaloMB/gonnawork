@@ -164,6 +164,13 @@
                           "view": "stats"
                         }
                       }
+                    },
+                    {
+                      "id": "ports",
+                      "type": "block",
+                      "content": {
+                        "mod": "ports"
+                      }
                     }
                   ],
                   "active": "files"

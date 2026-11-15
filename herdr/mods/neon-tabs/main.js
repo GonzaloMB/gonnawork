@@ -90,7 +90,7 @@ export default class Tabs extends View {
       : 10;
     const panel = find(root, "panel"), body = find(root, "panel-body");
     const enabled = shared("workspace.panels") ?? ["files", "changes"];
-    this.syncPanel(space, panel, body, [...enabled, "skills", "git", "stats"]);
+    this.syncPanel(space, panel, body, [...enabled, "skills", "git", "stats", "ports"]);
     const panelButton = (id, label, icon, color) => {
       const on = panel && !panel.hidden && body?.active === id;
       return h_flex().id(`panel-${id}`).h(26).px(8).gap(5).flex_none().items_center().rounded(6)
@@ -115,6 +115,7 @@ export default class Tabs extends View {
       .child(panelButton("skills", "Skills", "mods/neon-tabs/skills.svg", NEON.yellow))
       .child(panelButton("git", "Git", "mods/neon-tabs/git.svg", NEON.pink))
       .child(panelButton("stats", "Stats", "mods/neon-tabs/stats.svg", NEON.cyan))
+      .child(panelButton("ports", "Ports", "mods/ports/ports.svg", NEON.violet))
       .when(w?.buttons, el => el.child(button("minimize", w.platform === "windows" ? svg("mods/neon-tabs/win-min.svg").size(16) : "−", () => run("window.minimize")))
         .child(button("maximize", w.platform === "windows" ? svg(`mods/neon-tabs/${w.maximized ? "win-restore" : "win-max"}.svg`).size(16) : "□", () => run("window.maximize")))
         .child(button("close-window", w.platform === "windows" ? svg("mods/neon-tabs/win-close.svg").size(16) : svg("mods/pane/close.svg").size(13), () => run("window.close"))));

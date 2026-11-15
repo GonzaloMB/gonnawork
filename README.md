@@ -1,6 +1,6 @@
 # gonnawork
 
-A reusable macOS workspace for coding with agents: terminal tools, shell, editor and a [Herdr](https://herdr.dev) setup with neon accents, frosted glass and three extra panels (**Skills**, **Git**, **Stats**). One command sets up a new Mac.
+A reusable macOS workspace for coding with agents: terminal tools, shell, editor and a [Herdr](https://herdr.dev) setup with neon accents, frosted glass and four extra panels (**Skills**, **Git**, **Stats**, **Ports**). One command sets up a new Mac.
 
 ![The neon layout: Claude Code, a shell and the Git panel](screenshots/git.jpg)
 
@@ -67,7 +67,7 @@ Aliases: `lg` lazygit · `ld` lazydocker · `gg` tig · `glog` graph log · `dc`
 
 ## Herdr: the neon layout
 
-Glass sidebar, tab bar and panels over a blurred background, thin borders, 10 px corners and Apple's system colors for accents. The tab bar has a button for each side panel: **Files**, **Changes**, **Skills**, **Git**, **Stats**. Herdr remembers which one was open in each space.
+Glass sidebar, tab bar and panels over a blurred background, thin borders, 10 px corners and Apple's system colors for accents. The tab bar has a button for each side panel: **Files**, **Changes**, **Skills**, **Git**, **Stats**, **Ports**. Herdr remembers which one was open in each space.
 
 ### Git
 
@@ -111,6 +111,21 @@ What your agents are doing and what they cost, from Claude Code's own transcript
 - **Agents**: how many are working, need you, are done or idle, with sub-agents as a tree.
 - **Bars**: most used skills, estimated spend (uses × size), heaviest skills, fixed context per skill, and tokens per project.
 
+### Ports
+
+<p align="center"><img src="screenshots/ports-panel.jpg" alt="Ports panel" width="380"></p>
+
+Everything listening on a TCP port, and a quick way to stop it:
+
+- **This space**: servers started from the space's terminals, plus anything running in its project folders (Docker Compose services included).
+- **All**: everything, grouped by space, then **Outside Herdr** (started from another terminal), **Docker** and **Apps & system** (folded).
+- **Each row**: the port, what it is (Next.js, Vite, Postgres, Redis…), the command, the folder, the terminal or agent that started it (`Claude Code · api / 1`) and how long it's been up. **LAN** marks ports reachable from your network.
+- **Open** it in the browser, **jump** to its terminal, or read a container's **logs**.
+- **Stop**: one click for servers, two for apps and system. A terminal's foreground job gets <kbd>ctrl</kbd>+<kbd>c</kbd> (SIGINT to its process group, so `npm` and its children go too), a background job SIGTERM, a container `docker stop`. Still up after 3 seconds, it offers **Force**. **Stop all** stops a whole group. An agent's own port is never stopped from here.
+- **Click a row** for the full command, pid and what Stop will send, plus **Copy URL**, **Terminal here** and **Force kill**.
+- Refreshes every 3 s while open, every 20 s while closed. In a space on another machine it lists that machine's ports (`lsof`, or `ss` on Linux).
+- Keys: bind `ports.space`, `ports.all` or `ports.refresh` in `keys.json`.
+
 ### Sub-agents in the agents list
 
 Claude Code's sub-agents (its Agent/Task tool) run inside the main process, so Herdr doesn't see them. The `neon-agents` mod reads them from the session's transcripts and shows them **as a tree under the session that started them**, with a spinner while they work, nested when a sub-agent starts others. Clicking one takes you to its session.
@@ -135,6 +150,7 @@ Herdr's own Files and Changes panels, on glass.
 | `neon-agents` | Agents list with Claude Code sub-agents as a tree |
 | `skills` | The Skills panel, and the Stats panel with `props: { "view": "stats" }` |
 | `gitgraph` | The Git panel |
+| `ports` | The Ports panel |
 | `glass-files`, `glass-changes` | Files and Changes on glass |
 
 ### Background and real glass

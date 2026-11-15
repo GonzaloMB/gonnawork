@@ -45,7 +45,8 @@
                     { "id": "changes", "type": "block", "content": { "mod": "glass-changes" } },
                     { "id": "skills", "type": "block", "content": { "mod": "skills" } },
                     { "id": "git", "type": "block", "content": { "mod": "gitgraph" } },
-                    { "id": "stats", "type": "block", "content": { "mod": "skills", "props": { "view": "stats" } } }
+                    { "id": "stats", "type": "block", "content": { "mod": "skills", "props": { "view": "stats" } } },
+                    { "id": "ports", "type": "block", "content": { "mod": "ports" } }
                   ],
                   "active": "files"
                 }
