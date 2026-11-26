@@ -149,6 +149,8 @@ function commandLine(argv) {
   const words = [...(argv ?? [])];
   while (words.length && words[words.length - 1] === "") words.pop();
   if (!words.length) return null;
+  // A newline would run the text before it as soon as it's typed: such a job isn't restarted.
+  if (words.some((w) => /[\x00-\x1f\x7f]/.test(w))) return null;
   if (words.length < argv.length || words.length === 1) {
     const text = words.join(" ").trim();
     return /[()[\]<>|;&:"'`$\\]/.test(text) ? null : text;
