@@ -7,7 +7,7 @@
     uv run scripts/herdr-background.py photo.jpg  # any image
 
 Crops it to your screen's shape (like macOS "fill screen"), blurs and darkens it so text
-stays readable, saves ~/.config/herdr-app/backgrounds/glass-<n>.jpg and points the neon
+stays readable, saves ~/.config/herdr-app/backgrounds/glass-<n>.jpg and points the gonnawork-neon
 layout at it (a new name each time: Herdr caches images by path).
 """
 import json, os, re, subprocess, sys, time
@@ -36,9 +36,9 @@ name = f"backgrounds/glass-{int(time.time())}.jpg"
 os.makedirs(os.path.join(home, "backgrounds"), exist_ok=True)
 im.save(os.path.join(home, name), quality=90)
 
-layout = os.path.join(home, "layouts", "neon.json")
+layout = os.path.join(home, "layouts", "gonnawork-neon.json")
 if os.path.exists(layout):
     data = json.load(open(layout))
     data["background"] = {"image": name, "fit": "cover"}
     open(layout, "w").write(json.dumps(data, indent=2) + "\n")
-print(f"saved {name}" + (" and updated layouts/neon.json" if os.path.exists(layout) else ""))
+print(f"saved {name}" + (" and updated layouts/gonnawork-neon.json" if os.path.exists(layout) else ""))

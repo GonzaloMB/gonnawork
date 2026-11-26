@@ -1,12 +1,20 @@
 gonnawork
 Copyright 2026 GonzaloMB
 
-The Herdr mods in herdr/mods/ (neon-tabs, neon-pane, neon-agents, glass-files,
-glass-changes) are modified copies of mods shipped with Herdr
-(https://github.com/herdrdev/herdr-app), licensed under the Apache License 2.0.
-Changes: restyled for the neon/glass look; neon-tabs adds Skills, Git and Stats
-panel buttons; neon-pane adds an "Open in Ghostty" button; neon-agents shows
-Claude Code sub-agents as a tree. skills/ and gitgraph/ are original.
+The Herdr mods in herdr/mods/ (gonnawork-neon-tabs, gonnawork-neon-pane,
+gonnawork-neon-agents, gonnawork-glass-files, gonnawork-glass-changes) are
+modified copies of mods shipped with Herdr (https://github.com/herdrdev/herdr-app),
+licensed under the Apache License 2.0. Changes: restyled for the neon/glass look;
+neon-tabs adds Skills, Git, Stats and Ports panel buttons; neon-pane adds an
+"Open in Ghostty" button; neon-agents shows Claude Code sub-agents as a tree;
+glass-files draws VS Code style file icons; glass-changes has staged and unstaged
+lists per repo and worktree. gonnawork-skills, gonnawork-stats, gonnawork-gitgraph
+and gonnawork-ports are original.
+
+The file and folder icons in herdr/mods/gonnawork-glass-files/icons/ are drawn
+from Nerd Fonts glyphs (https://www.nerdfonts.com), which collect: Seti UI (MIT),
+Material Design Icons (Apache License 2.0), Devicons (MIT), Font Awesome
+(CC BY 4.0) and Octicons (MIT). Each file's name starts with its glyph set.
 
 nvim/ is based on the LazyVim starter (https://github.com/LazyVim/starter),
 licensed under the Apache License 2.0.

@@ -1,3 +1,6 @@
 .DS_Store
 *.backup-*
 nvim/lazy-lock.json.bak
+# Written by Herdr into mod folders
+herdr/mods/*/gpui-kit.d.ts
+herdr/mods/*/jsconfig.json

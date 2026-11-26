@@ -1,0 +1,232 @@
+{
+  "id": "root",
+  "cloned_from": {
+    "name": "main",
+    "version": "0.1.14"
+  },
+  "type": "row",
+  "children": [
+    {
+      "id": "sidebar",
+      "type": "column",
+      "children": [
+        {
+          "id": "brand",
+          "type": "block",
+          "content": {
+            "mod": "workspace-chrome"
+          },
+          "size": {
+            "px": 46
+          },
+          "window_drag": true
+        },
+        {
+          "id": "sidebar-lists",
+          "type": "column",
+          "children": [
+            {
+              "id": "spaces",
+              "type": "block",
+              "content": {
+                "mod": "spaces"
+              },
+              "size": {
+                "weight": 1
+              },
+              "min": 90
+            },
+            {
+              "id": "agents",
+              "type": "block",
+              "content": {
+                "mod": "gonnawork-neon-agents"
+              },
+              "size": {
+                "weight": 1
+              },
+              "min": 90
+            }
+          ]
+        },
+        {
+          "id": "sidebar-footer",
+          "type": "block",
+          "content": {
+            "mod": "workspace-chrome",
+            "props": {
+              "footer": true
+            }
+          },
+          "size": {
+            "px": 69
+          }
+        }
+      ],
+      "size": {
+        "px": 268
+      },
+      "min": 44,
+      "max": 480,
+      "background": "chrome",
+      "resizable": false
+    },
+    {
+      "id": "work",
+      "type": "column",
+      "children": [
+        {
+          "id": "tabs",
+          "type": "block",
+          "content": {
+            "mod": "gonnawork-neon-tabs"
+          },
+          "size": {
+            "px": 42
+          },
+          "window_drag": true
+        },
+        {
+          "id": "work-body",
+          "type": "row",
+          "children": [
+            {
+              "id": "main",
+              "type": "block",
+              "content": {
+                "tab": "active",
+                "pane": {
+                  "header": {
+                    "content": {
+                      "mod": "gonnawork-neon-pane"
+                    },
+                    "reveal": "always",
+                    "height": 28,
+                    "position": "top"
+                  },
+                  "background": "#1c1c1e4d",
+                  "border": {
+                    "width": 1,
+                    "color": "#ffffff1f"
+                  },
+                  "focus": {
+                    "width": 1,
+                    "color": "#ffffff40"
+                  },
+                  "radius": 10,
+                  "gap": 8,
+                  "lone": true
+                }
+              }
+            },
+            {
+              "id": "panel",
+              "type": "column",
+              "children": [
+                {
+                  "id": "panel-body",
+                  "type": "stack",
+                  "children": [
+                    {
+                      "id": "files",
+                      "type": "block",
+                      "content": {
+                        "mod": "gonnawork-glass-files"
+                      }
+                    },
+                    {
+                      "id": "changes",
+                      "type": "block",
+                      "content": {
+                        "mod": "gonnawork-glass-changes"
+                      }
+                    },
+                    {
+                      "id": "skills",
+                      "type": "block",
+                      "content": {
+                        "mod": "gonnawork-skills"
+                      }
+                    },
+                    {
+                      "id": "git",
+                      "type": "block",
+                      "content": {
+                        "mod": "gonnawork-gitgraph"
+                      }
+                    },
+                    {
+                      "id": "stats",
+                      "type": "block",
+                      "content": {
+                        "mod": "gonnawork-stats"
+                      }
+                    },
+                    {
+                      "id": "ports",
+                      "type": "block",
+                      "content": {
+                        "mod": "gonnawork-ports"
+                      }
+                    }
+                  ],
+                  "active": "files"
+                }
+              ],
+              "size": {
+                "px": 368
+              },
+              "min": 280,
+              "max": 900,
+              "hidden": true
+            }
+          ],
+          "padding": 8,
+          "gap": 8
+        },
+        {
+          "id": "status",
+          "type": "block",
+          "content": {
+            "mod": "workspace-status"
+          },
+          "size": {
+            "px": 28
+          }
+        }
+      ],
+      "resizable": false
+    }
+  ],
+  "background": {
+    "image": "backgrounds/gonnawork-glass.jpg",
+    "fit": "cover"
+  },
+  "theme": "gonnawork-neon",
+  "colors": {
+    "background": "#121214",
+    "border": "#ffffff1a",
+    "canvas": "#00000000",
+    "chrome": "#16181d8c",
+    "hover": "#ffffff0f",
+    "input": "#ffffff2e",
+    "popover": "#2c2c2ef2",
+    "raised": "#ffffff14",
+    "selected": "#ffffff1a",
+    "surface": "#2c2c2e59"
+  },
+  "terminal_padding": [
+    14,
+    12
+  ],
+  "terminal_opacity": 0.550000011920929,
+  "divider": {
+    "width": 1,
+    "color": "#ffffff14"
+  },
+  "titlebar": "none",
+  "traffic_lights": [
+    12,
+    16
+  ]
+}

@@ -14,10 +14,16 @@ die()  { printf '\033[1;31mxx\033[0m %s\n' "$*" >&2; exit 1; }
 
 # Moves an existing file aside unless it already is what we're installing.
 backup() {
-  local dest=$1
+  local dest=$1 kept
   if [[ -L $dest || -e $dest ]]; then
-    mv "$dest" "$dest.backup-$STAMP"
-    warn "kept your old $(basename "$dest") as $dest.backup-$STAMP"
+    kept="$dest.backup-$STAMP"
+    # Herdr loads every folder in mods/, so old mods are kept outside it.
+    if [[ $dest == "$HERDR/mods/"* ]]; then
+      mkdir -p "$HERDR/backups"
+      kept="$HERDR/backups/$(basename "$dest").backup-$STAMP"
+    fi
+    mv "$dest" "$kept"
+    warn "kept your old $(basename "$dest") as $kept"
   fi
 }
 
@@ -77,15 +83,20 @@ do_herdr() {
   for mod in "$REPO"/herdr/mods/*/; do
     place "herdr/mods/$(basename "$mod")" "$HERDR/mods/$(basename "$mod")"
   done
-  place herdr/themes/neon.json            "$HERDR/themes/neon.json"
-  place herdr/backgrounds/glass.jpg       "$HERDR/backgrounds/glass.jpg"
-  place herdr/layouts/neon.json           "$HERDR/layouts/neon.json"
-  place herdr/layouts/neon-blur.json      "$HERDR/layouts/neon-blur.json"
+  # Before 2026-11 the mods had no gonnawork- prefix: set those copies aside.
+  local old
+  for old in gitgraph glass-changes glass-files neon-agents neon-pane neon-tabs ports skills; do
+    [[ -d $HERDR/mods/$old && -d $REPO/herdr/mods/gonnawork-$old ]] && backup "$HERDR/mods/$old"
+  done
+  place herdr/themes/gonnawork-neon.json           "$HERDR/themes/gonnawork-neon.json"
+  place herdr/backgrounds/gonnawork-glass.jpg      "$HERDR/backgrounds/gonnawork-glass.jpg"
+  place herdr/layouts/gonnawork-neon.json          "$HERDR/layouts/gonnawork-neon.json"
+  place herdr/layouts/gonnawork-neon-blur.json     "$HERDR/layouts/gonnawork-neon-blur.json"
   if command -v herdr-app >/dev/null 2>&1; then
     for mod in "$REPO"/herdr/mods/*/; do
       herdr-app check "$HERDR/mods/$(basename "$mod")" >/dev/null || warn "herdr-app check failed for $(basename "$mod")"
     done
-    herdr-app do layout.switch '{"name":"neon"}' >/dev/null 2>&1 && say "Herdr is on the neon layout" || true
+    herdr-app do layout.switch '{"name":"gonnawork-neon-blur"}' >/dev/null 2>&1 && say "Herdr is on the gonnawork-neon-blur layout (real glass; ctrl+shift+L switches layouts)" || true
   fi
 }
 
