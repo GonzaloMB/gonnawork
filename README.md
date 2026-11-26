@@ -122,8 +122,9 @@ Everything listening on a TCP port, and a quick way to stop it:
 - **Each row**: the port, what it is (Next.js, Vite, Postgres, Redis…), the command, the folder, the terminal or agent that started it (`Claude Code · api / 1`) and how long it's been up. **LAN** marks ports reachable from your network.
 - **Open** it in the browser, **jump** to its terminal, or read a container's **logs**.
 - **Stop** always asks first, saying what it will send and where the process was started. A terminal's foreground job gets <kbd>ctrl</kbd>+<kbd>c</kbd> (SIGINT to its process group, so `npm` and its children go too), a background job SIGTERM, a container `docker stop`. Still up after 3 seconds, it offers **Force**, which asks too. **Stop all** stops a whole group, after one confirmation.
+- **Restart** asks first too. A container gets `docker restart`. A server running in a Herdr terminal's foreground gets <kbd>ctrl</kbd>+<kbd>c</kbd>, and once the shell has its prompt back, its command is typed in again (the dialog shows that command). Other servers, like one an agent started or one outside Herdr, have no Restart, because the panel can't tell how they were started.
 - **Apps & system are read-only**: they're listed so you know what holds a port, but they have no Stop or Force kill, so nothing in macOS or your apps breaks. The same goes for an agent's own port and Herdr's.
-- **Click a row** for the full command, pid and what Stop will send, plus **Copy URL**, **Terminal here** and **Force kill** (asks first).
+- **Click a row** for the full command, pid and what Stop and Restart will do, plus **Copy URL**, **Terminal here** and **Force kill** (asks first).
 - Refreshes every 3 s while open, every 20 s while closed. In a space on another machine it lists that machine's ports (`lsof`, or `ss` on Linux).
 - Keys: bind `ports.space`, `ports.all` or `ports.refresh` in `keys.json`.
 
