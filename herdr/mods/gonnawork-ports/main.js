@@ -12,6 +12,10 @@ import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input } from "gpui-base";
 import { spaces, panes, exec, hc, theme, home, run, terminals, layout, settings, nextCommand, openOverlay } from "herdr";
 
+// Panels are glass. Over real blur (the layout's window_blur) a light window behind them
+// would wash the text out, so the glass is denser there.
+const panelGlass = () => (layout()?.window_blur ? "#16181ddb" : "#14161ba6");
+
 const MOD = "gonnawork-ports";
 const icon = (name) => `mods/${MOD}/${name}.svg`;
 const C = { cyan: "#64d2ff", pink: "#ff375f", green: "#30d158", yellow: "#ffd60a", violet: "#bf5af2", red: "#ff453a", orange: "#ff9f0a" };
@@ -697,7 +701,7 @@ export default class Ports extends View {
     const pill = `${servers} server${servers === 1 ? "" : "s"} · ${rows.length} port${rows.length === 1 ? "" : "s"}${this.on ? ` · on ${this.on}` : ""}`;
 
     return v_flex().id("ports-root").size_full().min_h(0).rounded(10).overflow_hidden()
-      .bg("#14161ba6").border_1().border_color("#ffffff14").text_color(t.foreground).text_size(13)
+      .bg(panelGlass()).border_1().border_color("#ffffff14").text_color(t.foreground).text_size(13)
       .on_size_change((size, cx) => { if (Math.abs(size.width - this.width) >= 1) { this.width = size.width; cx.notify(); } })
       .child(this.header(t, pill))
       .child(h_flex().px(10).pt(10).gap(8).flex_none().items_center()

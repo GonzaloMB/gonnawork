@@ -9,6 +9,10 @@ import { v_flex, h_flex } from "gpui-base";
 import { spaces, panes, focused, exec, readTextFile, theme, home, run, agents, appHome, terminals, hc, layout, checking } from "herdr";
 import { readdir } from "fs/promises";
 
+// Panels are glass. Over real blur (the layout's window_blur) a light window behind them
+// would wash the text out, so the glass is denser there.
+const panelGlass = () => (layout()?.window_blur ? "#16181ddb" : "#14161ba6");
+
 const MOD = "gonnawork-stats";
 const C = { cyan: "#64d2ff", pink: "#ff375f", green: "#30d158", yellow: "#ffd60a", violet: "#bf5af2", red: "#ff453a" };
 // Token kinds, in a fixed order; validated for CVD separation on the panel's dark surface.
@@ -201,7 +205,7 @@ export default class Stats extends View {
     if (key !== this.liveKey && !checking()) { this.liveKey = key; this.loadLive(cx); }
     const perRow = this.width > 760 ? 4 : this.width > 330 ? 2 : 1;
     return v_flex().id("stats-root").size_full().min_h(0).rounded(10).overflow_hidden()
-      .bg("#14161ba6").border_1().border_color("#ffffff14").text_color(t.foreground).text_size(13)
+      .bg(panelGlass()).border_1().border_color("#ffffff14").text_color(t.foreground).text_size(13)
       .on_size_change((size, cx) => { if (Math.abs(size.width - this.width) >= 1) { this.width = size.width; cx.notify(); } })
       .child(this.header(t))
       .child(v_flex().id("stats-body").flex_1().min_h(0).overflow_y_scrollbar().p(12).gap(18)

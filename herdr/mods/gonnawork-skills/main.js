@@ -9,6 +9,10 @@ import { v_flex, h_flex, InputState, Input, TextView } from "gpui-base";
 import { spaces, panes, focused, exec, readTextFile, theme, home, run, props, appHome, layout, openOverlay, closeOverlay, shared, setShared, nextCommand, checking } from "herdr";
 import { STATES, STATE, tilde, scanDisk, claudeContext, readSettings, resolve, denied, applyState, migrateDeny, archive, restore } from "./model.js";
 
+// Panels are glass. Over real blur (the layout's window_blur) a light window behind them
+// would wash the text out, so the glass is denser there.
+const panelGlass = () => (layout()?.window_blur ? "#16181ddb" : "#14161ba6");
+
 const MOD = "gonnawork-skills";
 const REV = "gonnawork-skills.rev"; // bumped by a state change made in the picker popup
 const C = { cyan: "#64d2ff", pink: "#ff375f", green: "#30d158", yellow: "#ffd60a", violet: "#bf5af2", red: "#ff453a", orange: "#ff9f0a" };
@@ -398,7 +402,7 @@ export default class Skills extends View {
     if (rev !== this.rev) { this.rev = rev; this.reload(cx, true); }
     if (this.note && this.note.at && Date.now() - this.note.at > 6000) this.note = null;
     const root = v_flex().id("skills-root").size_full().min_h(0).rounded(10).overflow_hidden()
-      .bg("#14161ba6").border_1().border_color("#ffffff14").text_color(t.foreground).text_size(13)
+      .bg(panelGlass()).border_1().border_color("#ffffff14").text_color(t.foreground).text_size(13)
       .on_size_change((size, cx) => { if (Math.abs(size.width - this.width) >= 1) { this.width = size.width; cx.notify(); } });
     return root.child(this.detail ? this.detailView(t) : this.listView(t));
   }

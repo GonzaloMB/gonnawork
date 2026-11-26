@@ -75,7 +75,7 @@ There are two versions of the layout; <kbd>ctrl</kbd>+<kbd>shift</kbd>+<kbd>L</k
 
 | Layout | Glass |
 |---|---|
-| `gonnawork-neon-blur` (default) | **Real glass.** Herdr's `window_blur` (0.1.18+) blurs whatever is behind the window, like Ghostty does: your wallpaper, other windows. |
+| `gonnawork-neon-blur` (default) | **Real glass.** Herdr's `window_blur` (0.1.18+) blurs whatever is behind the window, like Ghostty does: your wallpaper, other windows. The glass is denser here, so text stays readable even with a white window behind. |
 | `gonnawork-neon` | A frosted picture behind the window, the same on every Mac. The screenshots here use it. |
 
 The panels below are shown on a demo repo.

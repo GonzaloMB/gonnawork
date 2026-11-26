@@ -1,7 +1,11 @@
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input, Scrollbar, v_virtual_list } from "gpui-base";
-import { spaces, panes, focused, exec, readTextFile, watchFolder, theme, settings, checking, openOverlay, nextCommand } from "herdr";
+import { spaces, panes, focused, exec, readTextFile, watchFolder, theme, settings, checking, openOverlay, nextCommand, layout } from "herdr";
 import { READ, discoverRepositories, readRepositories, repoName } from "./repositories.js";
+
+// Panels are glass. Over real blur (the layout's window_blur) a light window behind them
+// would wash the text out, so the glass is denser there.
+const panelGlass = () => (layout()?.window_blur ? "#16181ddb" : "#14161ba6");
 
 const MOD = "gonnawork-glass-changes";
 const icon = (name) => `mods/${MOD}/${name}.svg`;
@@ -431,7 +435,7 @@ export default class Changes extends View {
     const totalFiles = this.repos.reduce((n, r) => n + r.totalFiles, 0);
     const worktrees = this.repos.filter((r) => r.linked).length;
     const summary = `${plural(this.repos.length - worktrees, "repository", "repositories")}${worktrees ? ` · ${plural(worktrees, "worktree")}` : ""}${this.loading ? " · Updating…" : ""}`;
-    return v_flex().id("changes").size_full().min_h(0).rounded(10).overflow_hidden().bg("#14161ba6").border_1().border_color(t.border).text_color(t.foreground).text_size(13).track_focus(this.handle)
+    return v_flex().id("changes").size_full().min_h(0).rounded(10).overflow_hidden().bg(panelGlass()).border_1().border_color(t.border).text_color(t.foreground).text_size(13).track_focus(this.handle)
       .on_key_down((e, cx) => {
         if (e.key === "escape" && this.typing) { this.typing = false; this.handle.focus(); cx.stop_propagation(); cx.notify(); }
       })

@@ -4,7 +4,11 @@
 
 import { View, div, svg, PathBuilder } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input } from "gpui-base";
-import { spaces, panes, focused, exec, watchFolder, theme, settings, home } from "herdr";
+import { spaces, panes, focused, exec, watchFolder, theme, settings, home, layout } from "herdr";
+
+// Panels are glass. Over real blur (the layout's window_blur) a light window behind them
+// would wash the text out, so the glass is denser there.
+const panelGlass = () => (layout()?.window_blur ? "#16181ddb" : "#14161ba6");
 
 const LANES = ["#0a84ff", "#ff375f", "#30d158", "#ff9f0a", "#bf5af2", "#64d2ff", "#ffd60a", "#5e5ce6", "#ff453a", "#ac8e68"];
 const ROW = 24, LANE = 11, PAD = 10, MAX_LANES = 11;
@@ -302,7 +306,7 @@ export default class GitGraph extends View {
     if (sig !== this.sig) { this.sig = sig; this.discover(cx); }
     const loading = Boolean(this.busy.discover || this.busy.refresh || this.busy.fetch);
     const root = v_flex().id("gitgraph-root").relative().size_full().min_h(0).rounded(10).overflow_hidden()
-      .bg("#14161ba6").border_1().border_color("#ffffff12").text_color(t.foreground).text_size(12)
+      .bg(panelGlass()).border_1().border_color("#ffffff12").text_color(t.foreground).text_size(12)
       .on_size_change((size, cx) => { this.size = size; cx.notify(); })
       .child(this.toolbar(t, loading))
       .when(Boolean(this.note), (el) => el.child(div().mx(10).mb(6).px(8).py(4).rounded(6).text_size(11)
