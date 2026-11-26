@@ -4,13 +4,15 @@
 // then outside Herdr, Docker, and apps & system. Open one in the browser, jump to its terminal,
 // or stop it: a terminal's foreground job gets ctrl+c (SIGINT to its process group), a
 // background job SIGTERM, a container `docker stop`; still listening after a few seconds,
-// it can be force-killed.
+// it can be force-killed. Stopping and killing always ask first. Apps & system are read-only.
 
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input } from "gpui-base";
-import { spaces, panes, exec, hc, theme, home, run, terminals, layout, settings, nextCommand } from "herdr";
+import { spaces, panes, exec, hc, theme, home, run, terminals, layout, settings, nextCommand, openOverlay } from "herdr";
 
-const C = { cyan: "#64d2ff", pink: "#ff375f", green: "#30d158", yellow: "#ffd60a", violet: "#bf5af2", red: "#ff453a", orange: "#ff9f0a" };
+const MOD = "ports";
+const icon = (name) => `mods/${MOD}/${name}.svg`;
+const C ={ cyan: "#64d2ff", pink: "#ff375f", green: "#30d158", yellow: "#ffd60a", violet: "#bf5af2", red: "#ff453a", orange: "#ff9f0a" };
 
 // Prints U (user, home), L (pid, port, address, command) for each listening socket,
 // P (pid, ppid, pgid, tpgid, etime, user, command) and Q (pid, executable, which may hold
@@ -188,7 +190,7 @@ export default class Ports extends View {
     this.scope = localStorage.getItem("scope") === "all" ? "all" : "space";
     this.folded = new Set(["system"]);
     this.open = null;
-    this.confirm = null;
+    this.pending = null;
     this.stopping = new Map();
     this.note = null;
     this.pids = new Map();
@@ -207,12 +209,13 @@ export default class Ports extends View {
     // Every 3s while on screen, every 20s while the panel is closed.
     cx.timer.every(3000, (cx) => { if (this.visible() || Date.now() - this.last > 20000) this.scan(cx); });
     this.scan(cx);
-    // Keys: ports.space, ports.all, ports.refresh.
+    // Keys: ports.space, ports.all, ports.refresh. The stop confirmation answers with ports.confirm-stop.
     cx.spawn(async (cx) => {
       for (;;) {
         const c = await nextCommand();
         if (c === "space" || c === "all") { this.scope = c; localStorage.setItem("scope", c); }
         else if (c === "refresh") { this.pids.clear(); this.roots.clear(); this.scan(cx); }
+        else if (c === "confirm-stop") this.stopConfirmed(cx);
         cx.notify();
       }
     });
@@ -225,7 +228,7 @@ export default class Ports extends View {
   // False while this panel's block sits hidden in the layout (a closed side panel, another
   // stack child). A copy outside the layout (a pane, an overlay) counts as shown.
   visible() {
-    const path = findPath(layout(), (n) => n.content?.mod === "ports");
+    const path = findPath(layout(), (n) => n.content?.mod === MOD);
     if (!path) return true;
     return path.every((n, i) => {
       if (n.hidden) return false;
@@ -410,13 +413,46 @@ export default class Ports extends View {
     return { kind: "group", pgid: p.pgid, sig: p.tpgid > 0 && p.tpgid === p.pgid ? "INT" : "TERM", key: `g:${p.pgid}` };
   }
 
+  // Apps & system (an agent's own port included) are read-only: quitting one from a port
+  // list can break the OS or an app. Herdr's own processes are never stopped either.
   stoppable(r) {
-    if (r.guarded || (r.agentSelf && r.inTerminal)) return false;
+    if (r.kind === "system" || r.guarded) return false;
     return Boolean(r.container || r.pid);
   }
 
   label(r) {
     return `:${r.port} ${r.title}`;
+  }
+
+  // What Stop or Force does to a row, in words.
+  describe(r, force) {
+    const p = this.plan(r);
+    if (p.kind === "docker") return `Runs docker ${force ? "kill" : "stop"} ${r.container.name}`;
+    const sig = force ? "SIGKILL" : p.kind === "group" && p.sig === "INT" ? "ctrl+c (SIGINT)" : "SIGTERM";
+    return p.kind === "group" ? `Sends ${sig} to process group ${p.pgid}: the command and its children` : `Sends ${sig} to pid ${p.pid} only`;
+  }
+
+  // Stopping and killing always ask first, in Herdr's confirm dialog. It answers with
+  // `<mod>.confirm-stop`, and the rows are looked up again then, from the latest scan.
+  askStop(rs, force, group) {
+    rs = rs.filter((r) => this.stoppable(r));
+    if (!rs.length) return;
+    this.pending = { keys: rs.map((r) => r.key), force, on: this.on, at: Date.now() };
+    const one = rs.length === 1 ? rs[0] : null, verb = force ? "Force kill" : "Stop";
+    const title = one ? `${verb} ${this.label(one)}?` : `${verb} ${rs.length} servers${group ? ` in ${group}` : ""}?`;
+    const from = !one ? "" : one.term ? ` Started from ${one.starter ? `${one.starter} · ` : ""}${one.term.where}.` : one.kind === "dev" ? " Not started from Herdr." : "";
+    const what = one ? `${this.describe(one, force)}.${from}` : `${rs.map((r) => this.label(r)).join(", ")}. Each gets ctrl+c or SIGTERM, containers docker stop.`;
+    const warn = force ? " A kill can't be caught: the program gets no chance to clean up or save." : "";
+    openOverlay({ mod: "confirm", kind: "dialog", width: 460, height: 200, props: { title, detail: what + warn, command: { name: `${MOD}.confirm-stop` } } });
+  }
+
+  stopConfirmed(cx) {
+    const p = this.pending;
+    this.pending = null;
+    if (!p || p.on !== this.on || Date.now() - p.at > 120000) return;
+    const rs = (this.rows ?? []).filter((r) => p.keys.includes(r.key) && this.stoppable(r));
+    if (rs.length) this.stop(rs, p.force, cx);
+    else this.flash({ text: "Already stopped", ok: true });
   }
 
   stop(rs, force, cx) {
@@ -428,7 +464,6 @@ export default class Ports extends View {
       plans.get(p.key).rows.push(r);
     }
     for (const r of rs) this.stopping.set(r.key, { at: Date.now(), label: this.label(r) });
-    this.confirm = null;
     this.flash({ text: `${force ? "Killing" : "Stopping"} ${rs.map((r) => this.label(r)).join(", ")}…`, ok: true });
     cx.spawn(async (cx) => {
       const errors = [];
@@ -524,7 +559,7 @@ export default class Ports extends View {
 
   header(t, pill) {
     return h_flex().h(42).flex_none().px(12).gap(8).items_center().border_b(1).border_color("#ffffff14")
-      .child(svg("mods/ports/ports.svg").size(15).flex_none().text_color(C.violet))
+      .child(svg(icon("ports")).size(15).flex_none().text_color(C.violet))
       .child(div().font_semibold().child("Ports"))
       .child(div().px(6).h(18).flex().items_center().rounded(9).border_1().border_color("#ffffff1a").text_size(10).text_color(t.muted).truncate().child(pill))
       .child(div().flex_1())
@@ -587,8 +622,7 @@ export default class Ports extends View {
 
   section(t, id, title, list, color) {
     const folded = this.folded.has(id);
-    const quick = list.filter((r) => r.kind !== "system" && this.stoppable(r) && !this.stopping.has(r.key));
-    const sure = this.confirm === `all:${id}`;
+    const quick = list.filter((r) => this.stoppable(r) && !this.stopping.has(r.key));
     return v_flex().gap(6).flex_none()
       .child(h_flex().id(`sec-${id}`).gap(6).items_center().h(22)
         .on_click((_e, cx) => { folded ? this.folded.delete(id) : this.folded.add(id); cx.notify(); })
@@ -596,11 +630,8 @@ export default class Ports extends View {
         .child(div().flex_none().max_w(200).truncate().text_size(10.5).font_semibold().text_color(t.dim).child(title.toUpperCase()))
         .child(div().text_size(10.5).text_color(color).child(String(list.length)))
         .child(div().flex_1().h(1).bg("#ffffff0f"))
-        .when(quick.length > 1, (el) => el.child(this.pill(t, `stop-all-${id}`, sure ? `Stop ${quick.length}? Click again` : "Stop all", C.red, sure, (cx) => {
-          if (!sure) { this.confirm = `all:${id}`; cx.notify(); return; }
-          this.stop(quick, false, cx);
-          cx.notify();
-        }))))
+        .when(id === "system", (el) => el.child(div().flex_none().text_size(10).text_color(t.dim).child("read-only")))
+        .when(quick.length > 1, (el) => el.child(this.pill(t, `stop-all-${id}`, "Stop all", C.red, false, () => this.askStop(quick, false, title)))))
       .when(!folded, (el) => el.children(list.map((r) => this.row(t, r))));
   }
 
@@ -621,18 +652,13 @@ export default class Ports extends View {
       .child(svg(icon).size(14));
   }
 
-  // Stop: one click for servers, two for apps and system; a spinner while it goes, then
-  // Force if it's still listening.
+  // Stop (asks first); a spinner while it goes, then Force (asks too) if it's still listening.
   stopControl(t, r) {
     if (!this.stoppable(r)) return r.agentSelf ? div().flex_none().px(4).text_size(10.5).text_color(t.dim).child("agent") : null;
     const s = this.stopping.get(r.key);
     if (s && Date.now() - s.at < 3000) return div().w(24).flex_none().flex().justify_center().text_color(C.red).frames(["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"], 90);
-    if (s) return this.pill(t, `force-${r.key}`, "Force", C.red, true, (cx) => this.stop([r], true, cx));
-    if (this.confirm === r.key) return this.pill(t, `sure-${r.key}`, "Stop?", C.red, true, (cx) => this.stop([r], false, cx));
-    return this.iconButton(t, `stop-${r.key}`, "mods/ports/stop.svg", C.red, (cx) => {
-      if (r.kind === "system") { this.confirm = r.key; cx.notify(); return; }
-      this.stop([r], false, cx);
-    });
+    if (s) return this.pill(t, `force-${r.key}`, "Force", C.red, true, () => this.askStop([r], true));
+    return this.iconButton(t, `stop-${r.key}`, icon("stop"), C.red, () => this.askStop([r], false));
   }
 
   row(t, r) {
@@ -647,16 +673,16 @@ export default class Ports extends View {
       .border_color(open ? "#ffffff26" : "#ffffff0d").bg("#ffffff05")
       .hover((s) => s.bg("#ffffff0a").border_color("#ffffff1f"))
       .when(this.stopping.has(r.key), (el) => el.opacity(0.6))
-      .on_click((_e, cx) => { this.open = open ? null : r.key; this.confirm = null; cx.notify(); })
+      .on_click((_e, cx) => { this.open = open ? null : r.key; cx.notify(); })
       .child(h_flex().gap(8).items_center()
         .child(div().w(52).flex_none().font_family(mono).text_size(12.5).font_semibold().text_color(color).child(`:${r.port}`))
         .child(div().size(14).flex_none().flex().items_center().justify_center()
           .when(Boolean(r.icon), (el) => el.child(svg(`icons/${r.icon}.svg`).size(13).text_color(t.muted))))
         .child(div().flex_none().max_w(narrow ? 90 : 160).truncate().font_medium().child(r.title))
         .child(div().flex_1().min_w(0).truncate().text_size(11).text_color(t.dim).child(narrow ? "" : r.sub))
-        .when(this.web(r), (el) => el.child(this.iconButton(t, `open-${r.key}`, "mods/ports/globe.svg", C.cyan, () => this.browse(r))))
-        .when(Boolean(r.term), (el) => el.child(this.iconButton(t, `go-${r.key}`, "mods/ports/terminal.svg", C.green, () => this.go(r))))
-        .when(Boolean(r.container), (el) => el.child(this.iconButton(t, `logs-${r.key}`, "mods/ports/logs.svg", C.violet, () => this.logs(r))))
+        .when(this.web(r), (el) => el.child(this.iconButton(t, `open-${r.key}`, icon("globe"), C.cyan, () => this.browse(r))))
+        .when(Boolean(r.term), (el) => el.child(this.iconButton(t, `go-${r.key}`, icon("terminal"), C.green, () => this.go(r))))
+        .when(Boolean(r.container), (el) => el.child(this.iconButton(t, `logs-${r.key}`, icon("logs"), C.violet, () => this.logs(r))))
         .child(this.stopControl(t, r)))
       .child(h_flex().pl(60).gap(6).items_center().min_w(0)
         .when(r.exposed, (el) => el.child(div().flex_none().px(5).h(15).flex().items_center().rounded(4).bg(C.orange + "1f").text_size(9.5).text_color(C.orange).child("LAN")))
@@ -666,15 +692,18 @@ export default class Ports extends View {
 
   details(t, r, mono) {
     const plan = r.pid || r.container ? this.plan(r) : null;
-    const how = !this.stoppable(r) ? (r.guarded ? "Herdr's own: not stopped from here" : "The agent itself: close its terminal to stop it")
-      : plan?.kind === "docker" ? "Stop runs docker stop; Force, docker kill"
-      : plan?.kind === "group" ? `Stop sends ${plan.sig === "INT" ? "ctrl+c (SIGINT)" : "SIGTERM"} to process group ${plan.pgid}`
-      : `Stop sends SIGTERM to pid ${r.pid} only`;
+    const how = r.guarded ? "Herdr's own: not stopped from here"
+      : r.agentSelf ? (r.inTerminal ? "The agent itself: close its terminal to stop it" : "The agent itself: not stopped from here")
+      : r.kind === "system" ? "App or system: read-only here, so nothing breaks. Quit it from the app itself"
+      : !plan ? "No process to stop"
+      : plan.kind === "docker" ? "Stop runs docker stop; Force, docker kill. Both ask first"
+      : plan.kind === "group" ? `Stop sends ${plan.sig === "INT" ? "ctrl+c (SIGINT)" : "SIGTERM"} to process group ${plan.pgid}. Asks first`
+      : `Stop sends SIGTERM to pid ${r.pid} only. Asks first`;
     const facts = [r.pid ? `pid ${r.pid}` : null, r.container ? `container ${r.container.id.slice(0, 12)}` : null, `bound to ${r.addr || "*"}:${r.port}`, r.exposed ? "reachable from your network" : "this machine only"].filter(Boolean).join(" · ");
     const pills = [];
     if (this.web(r)) pills.push(this.pill(t, `copy-${r.key}`, "Copy URL", C.cyan, false, (cx) => this.copy(r, cx)));
     if (r.dir && !r.container) pills.push(this.pill(t, `here-${r.key}`, "Terminal here", C.green, false, () => run("tab.new", { folder: r.dir })));
-    if (this.stoppable(r)) pills.push(this.pill(t, `kill-${r.key}`, "Force kill", C.red, false, (cx) => this.stop([r], true, cx)));
+    if (this.stoppable(r)) pills.push(this.pill(t, `kill-${r.key}`, "Force kill", C.red, false, () => this.askStop([r], true)));
     return v_flex().pl(60).pt(4).gap(5)
       .child(div().text_size(11).font_family(mono).text_color(t.muted).child(r.container ? `${r.container.image} · ${r.container.name}` : r.self))
       .child(div().text_size(10.5).text_color(t.dim).child(facts))
