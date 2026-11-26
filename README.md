@@ -139,7 +139,14 @@ Claude Code's sub-agents (its Agent/Task tool) run inside the main process, so H
 ![Changes panel](screenshots/changes.jpg)
 </details>
 
-Herdr's own Files and Changes panels, on glass.
+Herdr's own Files panel, on glass. The Changes panel works like VS Code's Source Control:
+
+- **Every checkout is its own group**: the repo you're in plus its linked worktrees (tagged `worktree`, with their branch). From a folder that holds several repos, it lists each repo directly inside it.
+- **Staged Changes** and **Changes** are separate lists. A file changed in both shows in both, and its diff is the staged one (index vs HEAD) or the working-tree one (working tree vs index).
+- **Hover a file** for **+** (stage), **−** (unstage) and **↶** (discard). Each section header does the same for all its files.
+- **Discard always asks first**. It restores tracked files from the index, so staged work is kept, and deletes untracked files.
+- **Commit takes only what's staged** (Enter in the message box or the button). Nothing gets added for you, and the line above the box says how many files go to which branch.
+- Groups and sections fold, and Herdr remembers it. **Collapse all** folds every repo.
 
 ### The mods
 
@@ -151,7 +158,8 @@ Herdr's own Files and Changes panels, on glass.
 | `skills` | The Skills panel, and the Stats panel with `props: { "view": "stats" }` |
 | `gitgraph` | The Git panel |
 | `ports` | The Ports panel |
-| `glass-files`, `glass-changes` | Files and Changes on glass |
+| `glass-files` | Files on glass |
+| `glass-changes` | Changes on glass: stage, unstage, discard and commit, per repo and worktree |
 
 ### Background and real glass
 
